@@ -7,13 +7,14 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 
+// MongoDB 연결
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/chatdb';
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ MongoDB 연결 완료'))
   .catch((err) => console.error('❌ MongoDB 연결 실패:', err));
 
-// 메시지 스키마 정의
+// 메시지 스키마
 const messageSchema = new mongoose.Schema({
   nickname: String,
   message: String,
@@ -23,15 +24,17 @@ const messageSchema = new mongoose.Schema({
 
 const Message = mongoose.model('Message', messageSchema);
 
+// CORS 설정
 app.use(cors());
 
 const io = new Server(server, {
   cors: {
-    origin: 'https://fancy-cascaron-97aca7.netlify.app', // ← 너의 Netlify 주소
+    origin: 'https://fking-nice-chat.netlify.app/', // ← Netlify 주소
     methods: ['GET', 'POST'],
   },
 });
 
+// 기본 라우트
 app.get('/', (req, res) => {
   res.send('✅ Chat backend is live!');
 });
@@ -39,6 +42,7 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('✅ 연결됨:', socket.id);
 
+  // 채팅방 입장 시 과거 메시지 전송
   socket.on('joinRoom', async (roomId) => {
     socket.join(roomId);
 
@@ -50,6 +54,7 @@ io.on('connection', (socket) => {
     }
   });
 
+  // 새 메시지 수신 및 저장
   socket.on('sendMessage', async ({ roomId, nickname, message }) => {
     const ip = socket.handshake.headers['x-forwarded-for']?.split(',')[0] || socket.handshake.address;
 
