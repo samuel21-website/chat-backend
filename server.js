@@ -29,7 +29,7 @@ app.use(cors());
 
 const io = new Server(server, {
   cors: {
-    origin: 'https://fking-nice-chat.netlify.app/', // ← Netlify 주소
+    origin: 'https://fking-nice-chat.netlify.app', // ← Netlify 주소
     methods: ['GET', 'POST'],
   },
 });
